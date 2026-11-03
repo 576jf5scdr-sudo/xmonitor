@@ -1,0 +1,70 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="X Monitor">
+<meta name="theme-color" content="#0a0b0e"><link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="icon-180.png">
+<title>X Monitor</title><style>
+:root{--bg:#0a0b0e;--card:#14161b;--line:#23262e;--tx:#e9ebf0;--mu:#8b909c;--chrome:linear-gradient(135deg,#f4f5f8,#9aa0ac 45%,#e2e4ea 60%,#6d7380);--ok:#3ce696;--warn:#f5b748;--bad:#ff5d6c}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.4 -apple-system,BlinkMacSystemFont,"SF Pro Text",Inter,sans-serif;overscroll-behavior-y:contain}
+header{position:sticky;top:0;z-index:5;padding:calc(env(safe-area-inset-top) + 12px) 20px 12px;background:rgba(10,11,14,.82);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--line)}
+h1{margin:0;font-size:28px;letter-spacing:-.5px;font-weight:700;background:var(--chrome);-webkit-background-clip:text;color:transparent}
+.sub{color:var(--mu);font-size:12px;display:flex;align-items:center;gap:6px;margin-top:2px}.dot{width:7px;height:7px;border-radius:50%;background:var(--ok);box-shadow:0 0 8px var(--ok)}
+main{padding:14px 16px calc(env(safe-area-inset-bottom) + 96px)}#ptr{text-align:center;color:var(--mu);font-size:12px;height:0;overflow:hidden;transition:height .2s}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:12px;box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px}.tk{font-size:20px;font-weight:700}.mu{color:var(--mu);font-size:12px}
+.badge{min-width:44px;text-align:center;font-weight:800;padding:6px 10px;border-radius:12px;color:#0a0b0e}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}.kv{background:#0f1115;border:1px solid var(--line);border-radius:12px;padding:8px 10px}.kv b{display:block;font-size:15px}
+.ca{font:12px ui-monospace,Menlo,monospace;color:#c7cbd4;background:#0f1115;border:1px dashed #343844;border-radius:10px;padding:8px 10px;word-break:break-all;margin-top:8px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}.chip{font-size:11px;padding:4px 8px;border-radius:999px;border:1px solid var(--line);color:var(--mu)}.chip.bad{color:var(--bad);border-color:#5a2730}.chip.ok{color:var(--ok);border-color:#1f4a37}
+.btns{display:flex;gap:8px}.btn{flex:1;text-align:center;text-decoration:none;color:var(--tx);padding:10px;border-radius:12px;background:#1c1f26;border:1px solid #2c303a;font-weight:600;font-size:13px}
+.empty{text-align:center;padding:40px 20px;color:var(--mu)}.empty .ring{width:72px;height:72px;margin:0 auto 14px;border-radius:50%;border:2px solid #3a3f4a;position:relative;animation:p 2.4s infinite}
+@keyframes p{0%{box-shadow:0 0 0 0 rgba(200,205,215,.25)}100%{box-shadow:0 0 0 22px rgba(200,205,215,0)}}
+.nm{border-top:1px solid var(--line);padding:8px 0;font-size:13px}.nm:first-of-type{border:0}
+.big{font-size:30px;font-weight:700;background:var(--chrome);-webkit-background-clip:text;color:transparent}
+.bar{height:8px;border-radius:9px;background:#0f1115;overflow:hidden;margin-top:8px}.bar i{display:block;height:100%;background:var(--chrome)}
+a.acc{display:flex;align-items:center;gap:12px;padding:12px 4px;border-top:1px solid var(--line);color:var(--tx);text-decoration:none}a.acc:first-child{border:0}
+.av{width:36px;height:36px;border-radius:50%;background:var(--chrome);display:grid;place-items:center;color:#14161b;font-weight:800}
+nav{position:fixed;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom) + 10px);display:flex;background:rgba(22,24,30,.85);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid #2a2e37;border-radius:22px;padding:6px}
+nav button{flex:1;background:none;border:0;color:var(--mu);font:600 11px -apple-system,sans-serif;padding:8px 0;border-radius:16px}nav button svg{display:block;margin:0 auto 3px;width:22px;height:22px}
+nav button.on{color:var(--tx);background:#262a33}
+#toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top) + 70px);transform:translateX(-50%);background:#e9ebf0;color:#0a0b0e;padding:8px 14px;border-radius:999px;font-weight:600;font-size:13px;opacity:0;transition:.25s;pointer-events:none}
+</style></head><body>
+<header><h1 id="ttl">Alerts</h1><div class="sub"><span class="dot"></span><span id="upd">Loading…</span></div></header>
+<div id="ptr">Release to refresh</div><main id="m"></main><div id="toast">Copied</div>
+<nav id="nav"></nav>
+<script>
+const TZ='Europe/Athens',tabs=[['alerts','Alerts','M12 3a6 6 0 0 0-6 6v4l-2 3h16l-2-3V9a6 6 0 0 0-6-6zM10 19a2 2 0 0 0 4 0'],['scans','Scans','M4 12h3l2-6 4 12 2-6h5'],['watch','Watchlist','M16 11a4 4 0 1 0-8 0M3 20c1.5-4 5-6 9-6s7.5 2 9 6'],['stats','Stats','M5 20V10M12 20V4M19 20v-7']];
+let tab='alerts',F=null;
+const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const tm=t=>new Date(t*1000).toLocaleString('en-GB',{timeZone:TZ,day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+const usd=n=>n==null?'—':'$'+(n>=1e6?(n/1e6).toFixed(2)+'M':n>=1e3?(n/1e3).toFixed(1)+'k':Math.round(n));
+const age=h=>h==null?'—':h<1?Math.round(h*60)+'m':h.toFixed(1)+'h';
+const col=s=>s>=8?'var(--ok)':s>=6?'#cfd3db':s>=4?'var(--warn)':'var(--bad)';
+nav.innerHTML=tabs.map(([k,l,p])=>`<button data-k="${k}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="${p}"/></svg>${l}</button>`).join('');
+nav.onclick=e=>{const b=e.target.closest('button');if(b){tab=b.dataset.k;render();scrollTo(0,0)}};
+function copy(ca){navigator.clipboard?.writeText(ca);const t=$('#toast');t.style.opacity=1;setTimeout(()=>t.style.opacity=0,1200)}
+function alertCard(a){const d=a.dex||{},r=a.rug||{};const fl=(r.risks||[]).map(x=>`<span class="chip bad">${esc(x)}</span>`).join('')||(r.reachable?'<span class="chip ok">No RugCheck flags</span>':'<span class="chip">RugCheck unreachable</span>');
+return `<div class="card"><div class="row"><div><div class="tk">$${esc(d.symbol)}</div><div class="mu">${esc(d.name)} · ${tm(a.time)}</div></div><div class="badge" style="background:${col(a.score)}">${a.score}/10</div></div>
+<div class="ca" onclick="copy('${esc(a.ca)}')">${esc(a.ca)} &nbsp;⧉</div>
+<div class="grid"><div class="kv"><span class="mu">Liquidity</span><b>${usd(d.liq)}</b></div><div class="kv"><span class="mu">FDV</span><b>${usd(d.fdv)}</b></div><div class="kv"><span class="mu">Age</span><b>${age(d.age_h)}</b></div><div class="kv"><span class="mu">Vol 1h</span><b>${usd(d.vol_h1)}</b></div></div>
+<div class="chips">${fl}<span class="chip">${(a.authors||[]).length} callers${a.watchlist_hits?' · '+a.watchlist_hits+' watchlist':''}</span></div>
+<div class="btns"><a class="btn" href="${esc(d.url||'https://dexscreener.com/solana/'+a.ca)}" target="_blank">DexScreener</a>${a.posts?.[0]?`<a class="btn" href="${esc(a.posts[0])}" target="_blank">Source post</a>`:''}</div></div>`}
+function render(){document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.k==tab));$('#ttl').textContent=tabs.find(t=>t[0]==tab)[1];
+if(!F){$('#m').innerHTML='<div class="empty">Loading feed…</div>';return}
+$('#upd').textContent='Updated '+tm(F.updated)+' · Athens';let h='';
+if(tab=='alerts')h=F.alerts.length?F.alerts.map(alertCard).join(''):'<div class="empty"><div class="ring"></div><b style="color:var(--tx)">Watching X</b><br>No coin has scored 6+ yet. Fresh catches land here.</div>';
+if(tab=='scans')h=F.runs.map(r=>`<div class="card"><div class="row"><b>Scan #${r.id}</b><span class="mu">${tm(r.time)}</span></div>
+<div class="grid"><div class="kv"><span class="mu">Posts</span><b>${r.posts??'—'}</b></div><div class="kv"><span class="mu">CAs seen</span><b>${r.unique_cas??'—'}</b></div><div class="kv"><span class="mu">Alerts</span><b>${r.alerts||0}</b></div><div class="kv"><span class="mu">X reads</span><b>${r.x_reads??'—'}</b></div></div>
+${(r.near_misses||[]).length?'<div class="mu" style="margin-bottom:4px">Near misses</div>'+r.near_misses.slice(0,6).map(n=>`<div class="nm row"><span style="font-family:ui-monospace,monospace;font-size:12px" ${n.ca?`onclick="copy('${esc(n.ca)}')"`:''}>${esc(n.symbol?'$'+n.symbol:(n.ca||'').slice(0,6)+'…'+(n.ca||'').slice(-4))}</span><span class="mu" style="text-align:right">${esc(n.reason)}${n.post?` · <a style="color:#cfd3db" href="${esc(n.post)}" target="_blank">post</a>`:''}</span></div>`).join(''):'<div class="mu">Nothing close this pass.</div>'}</div>`).join('')||'<div class="empty">No scans yet.</div>';
+if(tab=='watch')h=`<div class="card"><div class="mu" style="margin-bottom:6px">${F.watchlist.length} accounts · watchlist callers count double</div>${F.watchlist.map(u=>`<a class="acc" href="https://x.com/${esc(u)}" target="_blank"><span class="av">${esc(u[0].toUpperCase())}</span><span style="flex:1">@${esc(u)}</span><span class="mu">›</span></a>`).join('')}</div>`;
+if(tab=='stats'){const s=F.stats;h=`<div class="grid" style="margin-top:0"><div class="card"><div class="mu">Scans today</div><div class="big">${s.scans_today}</div></div><div class="card"><div class="mu">Alerts total</div><div class="big">${s.alerts_total}</div></div></div>
+<div class="card"><div class="row"><span class="mu">X reads today</span><b>${s.x_reads_today} / ${s.x_reads_limit}</b></div><div class="bar"><i style="width:${Math.min(100,s.x_reads_today/s.x_reads_limit*100)}%"></i></div></div>
+<div class="card"><div class="row"><span class="mu">Total scans</span><b>${s.total_runs}</b></div><div class="row nm"><span class="mu">Coins checked</span><b>${s.tracked_cas}</b></div><div class="row nm"><span class="mu">Scan interval</span><b>~20 min</b></div><div class="row nm"><span class="mu">Alert threshold</span><b>6+/10</b></div><div class="row nm"><span class="mu">Last updated</span><b>${tm(F.updated)}</b></div></div>`}
+$('#m').innerHTML=h}
+async function load(){try{const r=await fetch('data/feed.json?t='+Date.now(),{cache:'no-store'});F=await r.json()}catch(e){$('#upd').textContent='Offline'}render()}
+let y0=null,dy=0;addEventListener('touchstart',e=>{if(scrollY<=0)y0=e.touches[0].clientY},{passive:true});
+addEventListener('touchmove',e=>{if(y0==null)return;dy=e.touches[0].clientY-y0;$('#ptr').style.height=Math.min(Math.max(dy*.4,0),40)+'px';$('#ptr').textContent=dy>110?'Release to refresh':'Pull to refresh';$('#ptr').style.lineHeight='40px'},{passive:true});
+addEventListener('touchend',async()=>{if(y0!=null&&dy>110){$('#ptr').textContent='Refreshing…';await load()}$('#ptr').style.height=0;y0=null;dy=0});
+document.addEventListener('visibilitychange',()=>document.hidden||load());setInterval(load,60000);
+render();load();if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js');
+</script></body></html>
