@@ -34,7 +34,7 @@ nav button.on{color:var(--tx);background:#262a33}
 <nav id="nav"></nav>
 <script>
 const TZ='Europe/Athens',tabs=[['alerts','Alerts','M12 3a6 6 0 0 0-6 6v4l-2 3h16l-2-3V9a6 6 0 0 0-6-6zM10 19a2 2 0 0 0 4 0'],['scans','Scans','M4 12h3l2-6 4 12 2-6h5'],['watch','Watchlist','M16 11a4 4 0 1 0-8 0M3 20c1.5-4 5-6 9-6s7.5 2 9 6'],['stats','Stats','M5 20V10M12 20V4M19 20v-7']];
-let tab='alerts',F=null;
+let tab=(location.hash.slice(1)||'alerts'),F=null;
 const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const tm=t=>new Date(t*1000).toLocaleString('en-GB',{timeZone:TZ,day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
 const usd=n=>n==null?'—':'$'+(n>=1e6?(n/1e6).toFixed(2)+'M':n>=1e3?(n/1e3).toFixed(1)+'k':Math.round(n));
